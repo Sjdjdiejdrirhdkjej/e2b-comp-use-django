@@ -25,9 +25,12 @@ SECRET_KEY = "django-insecure-mz9swoi_x*+eg-f$^o&6ysprynps@im(l(b($h6nps6au0xa#m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["57v9vp-8000.csb.app", "localhost", "127.0.0.1", "0.0.0.0"]
+ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ["https://57v9vp-8000.csb.app"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://eaa0b03e-fe3f-4d42-8819-b13dc93d617c-00-2y2e2jzis2bj.pike.replit.dev",
+    "https://*.replit.dev",
+]
 
 
 # Application definition
