@@ -1,0 +1,37 @@
+{
+  "name": "django-ai-chat",
+  "description": "Django chat application with AI tools for file operations and web search",
+  "version": "1.0.0",
+  "main": "manage.py",
+  "scripts": {
+    "start": "python manage.py runserver 0.0.0.0:8000",
+    "setup": "./setup.sh",
+    "test": "python comprehensive_test.py",
+    "migrate": "python manage.py migrate",
+    "collectstatic": "python manage.py collectstatic --noinput"
+  },
+  "keywords": [
+    "django",
+    "ai",
+    "chat",
+    "gemini",
+    "file-operations",
+    "web-search",
+    "daytona"
+  ],
+  "author": "AI Assistant",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/django-ai-chat"
+  },
+  "engines": {
+    "python": ">=3.10"
+  },
+  "daytona": {
+    "environment": "python",
+    "ports": [8000],
+    "autoStart": true,
+    "setupScript": "./setup.sh"
+  }
+}
