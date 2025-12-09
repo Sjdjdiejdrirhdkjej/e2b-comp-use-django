@@ -48,9 +48,37 @@ def send_message(request, conversation_id):
     )
 
     # Check if this is an AI command first
-    command_result = execute_ai_command(content)
+    command_result, action_output = execute_ai_command(content)
     if command_result:
         ai_response = command_result
+        ai_message = Message.objects.create(
+            conversation=conversation,
+            content=ai_response,
+            is_user=False,
+            tool_used=True,
+        )
+        conversation.updated_at = ai_message.created_at
+        conversation.save()
+
+        return JsonResponse(
+            {
+                "user_message": {
+                    "id": user_message.id,
+                    "content": user_message.content,
+                    "created_at": user_message.created_at.isoformat(),
+                },
+                "ai_message": {
+                    "id": ai_message.id,
+                    "content": ai_message.content,
+                    "created_at": ai_message.created_at.isoformat(),
+                },
+                "conversation_title": conversation.title,
+                "action_output": action_output,
+                "action_status": "success"
+                if action_output and not action_output.startswith("Error:")
+                else "error",
+            }
+        )
     else:
         # Generate title if this is the first message and title is still "New Chat"
         if conversation.title == "New Chat" and conversation.messages.count() == 1:
@@ -65,11 +93,16 @@ def send_message(request, conversation_id):
         gemini_messages = format_messages_for_gemini(conversation_messages)
 
         try:
-            ai_response = get_ai_response(gemini_messages)
+            ai_response, tool_suggested = get_ai_response(gemini_messages)
         except Exception as e:
             ai_response = f"Error: {str(e)}"
+            tool_suggested = False
+
     ai_message = Message.objects.create(
-        conversation=conversation, content=ai_response, is_user=False
+        conversation=conversation,
+        content=ai_response,
+        is_user=False,
+        tool_suggested=tool_suggested,
     )
 
     conversation.updated_at = ai_message.created_at

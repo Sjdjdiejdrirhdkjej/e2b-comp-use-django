@@ -1,10 +1,10 @@
-# Django AI Chat Application
+# Prime - AI Chat Application
 
 A powerful Django chat application with integrated AI tools for file operations and web search.
 
 ## Features
 
-- 🤖 AI-powered chat using Google Gemini
+- 🤖 AI-powered chat using Google Gemini (Prime AI)
 - 📁 File operations (read, write, delete, list)
 - 🌐 Web search capabilities
 - 📱 Responsive mobile-friendly interface
@@ -17,7 +17,7 @@ A powerful Django chat application with integrated AI tools for file operations 
 
 ### Launch the Sandbox
 ```bash
-daytona create --code https://github.com/your-repo/django-ai-chat
+daytona create --code https://github.com/your-repo/prime-ai-chat
 ```
 
 ### Setup Instructions

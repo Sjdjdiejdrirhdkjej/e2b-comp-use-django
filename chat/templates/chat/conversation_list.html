@@ -1,412 +1,416 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#202123">
+    <meta name="theme-color" content="#8b5cf6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>AI Chat - Conversations</title>
+    <title>Prime - Conversations</title>
+    
+    <!-- Modern CSS Architecture -->
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Page-specific styles */
+        .app-layout {
+            background: var(--gradient-hero);
         }
         
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f0f2f5;
-            height: 100vh;
-            display: flex;
-            margin: 0;
-            padding: 0;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        
+        /* Enhanced sidebar animations */
         .sidebar {
-            width: 260px;
-            background: #202123;
-            color: white;
-            padding: 20px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-                overflow-x: hidden;
-            }
-            
-            .mobile-header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-            }
-            
-            .mobile-menu-toggle {
-                display: block;
-            }
-            
-            .sidebar {
-                width: 100%;
-                padding: 16px;
-                max-height: 0;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                z-index: 20;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                overflow: hidden;
-                transition: max-height 0.3s ease-in-out;
-                background: #202123;
-            }
-            
-            .sidebar.mobile-open {
-                max-height: 70vh;
-                overflow-y: auto;
-            }
-            
-            .main-content {
-                flex: 1;
-                padding: 20px;
-                min-height: 100vh;
-                margin-top: 60px;
-            }
-            
-            .empty-state h1 {
-                font-size: 24px;
-            }
-            
-            .empty-state p {
-                font-size: 16px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            body {
-                font-size: 14px;
-            }
-            
-            .sidebar {
-                padding: 12px;
-                max-height: 35vh;
-            }
-            
-            .sidebar h2 {
-                font-size: 16px;
-                margin-bottom: 16px;
-            }
-            
-            .new-chat-btn {
-                padding: 12px;
-                font-size: 14px;
-                margin-bottom: 16px;
-            }
-            
-            .conversation-item {
-                padding: 12px;
-                margin-bottom: 8px;
-                min-height: 48px;
-            }
-            
-            .delete-btn {
-                padding: 6px 8px;
-                font-size: 12px;
-                margin-left: 6px;
-            }
-            
-            .rename-btn {
-                padding: 6px 8px;
-                font-size: 12px;
-                margin-left: 4px;
-            }
-            
-            .conversation-title {
-                font-size: 14px;
-                line-height: 1.3;
-            }
-            
-            .rename-input {
-                font-size: 14px;
-                padding: 8px 10px;
-            }
-            
-            .main-content {
-                padding: 16px;
-                min-height: 65vh;
-            }
-            
-            .empty-state h1 {
-                font-size: 20px;
-            }
-            
-            .empty-state p {
-                font-size: 14px;
-            }
-            
-            .start-chat-btn {
-                padding: 12px 24px;
-                font-size: 14px;
-                min-height: 44px;
-            }
-        }
-        
-        .sidebar h2 {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        
-        .new-chat-btn {
-            width: 100%;
-            padding: 12px;
-            background: #10a37f;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-bottom: 20px;
-            min-height: 44px;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            transition: background 0.2s, transform 0.1s;
-        }
-        
-        .new-chat-btn:hover {
-            background: #0d8c6f;
-        }
-        
-        .new-chat-btn:active {
-            transform: scale(0.98);
-            background: #0c7a5f;
-        }
-        
-        .conversation-list {
-            list-style: none;
-        }
-        
-        .conversation-item {
-            padding: 12px;
-            margin-bottom: 8px;
-            background: #2d2d2d;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            min-height: 44px;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-        
-        .conversation-item:hover {
-            background: #3d3d3d;
-        }
-        
-        .conversation-item:active {
-            transform: scale(0.98);
-            background: #4d4d4d;
-        }
-        
-        .conversation-item a {
-            color: white;
-            text-decoration: none;
-            display: block;
-            flex: 1;
-            min-height: 44px;
-            line-height: 44px;
-        }
-        
-        .delete-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 12px;
-            cursor: pointer;
-            margin-left: 8px;
-            min-height: 32px;
-            min-width: 44px;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-        
-        .delete-btn:hover {
-            background: #c82333;
-        }
-        
-        .rename-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 12px;
-            cursor: pointer;
-            margin-left: 4px;
-            min-height: 32px;
-            min-width: 44px;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-        
-        .rename-btn:hover {
-            background: #0056b3;
-        }
-        
-        .conversation-title {
-            flex: 1;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-        
-        .conversation-title:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .rename-input {
-            flex: 1;
-            padding: 6px 8px;
-            border: 1px solid #007bff;
-            border-radius: 4px;
-            background: #2d2d2d;
-            color: white;
-            font-size: 13px;
-            outline: none;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 4px;
+            animation: slideInLeft 0.6s ease-out;
         }
         
         .main-content {
-            flex: 1;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        /* Conversation item enhancements */
+        .conversation-item {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .conversation-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .conversation-item:hover::after {
+            left: 100%;
+        }
+        
+        /* Empty state enhancements */
+        .empty-state {
+            animation: slideInUp 0.8s ease-out;
+        }
+        
+        .empty-state-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto var(--space-6);
+            background: var(--gradient-primary);
+            border-radius: var(--radius-3xl);
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: var(--shadow-xl);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Mobile menu improvements */
+        .mobile-header {
+            background: var(--surface);
+            backdrop-filter: var(--glass-backdrop);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* Theme toggle */
+        .theme-toggle {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-full);
+            padding: var(--space-2);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            backdrop-filter: var(--glass-backdrop);
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        /* Search functionality */
+        .search-container {
+            margin-bottom: var(--space-4);
             position: relative;
         }
         
-        .mobile-header {
-            display: none;
-            background: white;
-            padding: 16px;
-            border-bottom: 1px solid #e0e0e0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 15;
+        .search-input {
+            width: 100%;
+            padding: var(--space-3) var(--space-4) var(--space-3) var(--space-10);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            background: var(--glass-bg);
+            color: var(--dark-text-primary);
+            backdrop-filter: var(--glass-backdrop);
+            transition: all var(--transition-base);
+            font-size: var(--text-sm);
         }
         
-        .mobile-menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            -webkit-tap-highlight-color: transparent;
+        .search-input:focus {
+            border-color: var(--primary-500);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
         }
         
-        .mobile-menu-toggle span {
-            display: block;
-            width: 24px;
-            height: 2px;
-            background: #333;
-            margin: 5px 0;
-            transition: 0.3s;
+        .search-icon {
+            position: absolute;
+            left: var(--space-3);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--dark-text-tertiary);
+            pointer-events: none;
         }
         
-        .mobile-menu-toggle.active span:nth-child(1) {
-            transform: rotate(-45deg) translate(-5px, 6px);
+        /* Stats display */
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--space-3) var(--space-4);
+            background: var(--glass-bg);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--space-4);
+            backdrop-filter: var(--glass-backdrop);
         }
         
-        .mobile-menu-toggle.active span:nth-child(2) {
-            opacity: 0;
-        }
-        
-        .mobile-menu-toggle.active span:nth-child(3) {
-            transform: rotate(45deg) translate(-5px, -6px);
-        }
-        
-        .empty-state {
+        .stat-item {
             text-align: center;
-            color: #666;
         }
         
-        .empty-state h1 {
-            font-size: 32px;
-            margin-bottom: 16px;
+        .stat-value {
+            font-size: var(--text-lg);
+            font-weight: var(--font-bold);
+            color: var(--primary-300);
         }
         
-        .empty-state p {
-            font-size: 18px;
-            margin-bottom: 24px;
+        .stat-label {
+            font-size: var(--text-xs);
+            color: var(--dark-text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
         }
         
-        .start-chat-btn {
-            padding: 12px 24px;
-            background: #10a37f;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            text-decoration: none;
-            display: inline-block;
-        }
-        
-        .start-chat-btn:hover {
-            background: #0d8c6f;
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .stats-container {
+                margin-bottom: var(--space-3);
+            }
+            
+            .search-container {
+                margin-bottom: var(--space-3);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="mobile-header">
-        <button class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-        <h2 style="margin: 0; color: #333;">AI Chat</h2>
-        <div style="width: 40px;"></div>
-    </div>
-    
-    <div class="sidebar">
-        <h2>AI Chat</h2>
-        <button class="new-chat-btn" onclick="window.location.href='{% url 'new_conversation' %}'; closeMobileMenu();">+ New Chat</button>
-        <ul class="conversation-list">
-            {% for conversation in conversations %}
-                <li class="conversation-item" id="conversation-{{ conversation.id }}">
-                    <div class="conversation-title" onclick="startRename({{ conversation.id }}, '{{ conversation.title|escapejs }}')">{{ conversation.title }}</div>
-                    <div class="action-buttons">
-                        <button class="rename-btn" onclick="startRename({{ conversation.id }}, '{{ conversation.title|escapejs }}')">Rename</button>
-                        <button class="delete-btn" onclick="deleteConversation({{ conversation.id }})">Delete</button>
+    <div class="app-layout">
+        <!-- Mobile Header -->
+        <header class="mobile-header">
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <h2 style="margin: 0; color: var(--text-primary); font-size: var(--text-lg);">Prime</h2>
+            <div style="display: flex; align-items: center; gap: var(--space-2);">
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <div style="width: 32px;"></div>
+            </div>
+        </header>
+        
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">Prime</h2>
+                <button class="btn btn-primary" onclick="window.location.href='{% url 'new_conversation' %}'; closeMobileMenu();">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    New Chat
+                </button>
+            </div>
+            
+            <!-- Search -->
+            <div class="search-container">
+                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    placeholder="Search conversations..."
+                    id="search-input"
+                    onkeyup="filterConversations()"
+                >
+            </div>
+            
+            <!-- Stats -->
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-value">{{ conversations.count }}</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="recent-count">0</div>
+                    <div class="stat-label">Recent</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="today-count">0</div>
+                    <div class="stat-label">Today</div>
+                </div>
+            </div>
+            
+            <!-- Conversation List -->
+            <ul class="conversation-list" id="conversation-list">
+                {% for conversation in conversations %}
+                    <li class="conversation-item animate-slide-in-left" id="conversation-{{ conversation.id }}" data-title="{{ conversation.title|lower }}" data-date="{{ conversation.created_at|date:'Y-m-d' }}">
+                        <div class="conversation-title" onclick="startRename({{ conversation.id }}, '{{ conversation.title|escapejs }}')">
+                            {{ conversation.title }}
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-ghost" onclick="startRename({{ conversation.id }}, '{{ conversation.title|escapejs }}')" aria-label="Rename conversation">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </button>
+                            <button class="btn btn-sm btn-error" onclick="deleteConversation({{ conversation.id }})" aria-label="Delete conversation">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </li>
+                {% empty %}
+                    <li class="empty-state" style="list-style: none; padding: var(--space-6); text-align: center;">
+                        <div class="empty-state-icon">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </div>
+                        <h3 style="color: var(--dark-text-secondary); margin-bottom: var(--space-2);">No conversations yet</h3>
+                        <p style="color: var(--dark-text-tertiary); font-size: var(--text-sm);">Start your first conversation to see it here</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <path d="M9 11H3v10h6V11z"></path>
+                        <path d="M15 3H9v18h6V3z"></path>
+                        <path d="M21 7h-6v14h6V7z"></path>
+                    </svg>
+                </div>
+                <h1>Welcome to Prime</h1>
+                <p>Start a new conversation to chat with Prime AI</p>
+                <a href="{% url 'new_conversation' %}" class="btn btn-primary btn-lg animate-bounce">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Start New Chat
+                </a>
+                
+                <!-- Feature highlights -->
+                <div style="margin-top: var(--space-10); text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
+                    <h3 style="color: var(--primary-300); margin-bottom: var(--space-4); text-align: center;">🚀 Prime AI Features</h3>
+                    <div class="card" style="background: var(--glass-bg); backdrop-filter: var(--glass-backdrop); border: 1px solid var(--glass-border);">
+                        <div style="padding: var(--space-5);">
+                            <div style="display: grid; gap: var(--space-4); font-size: var(--text-sm); line-height: var(--leading-relaxed);">
+                                <div style="display: flex; align-items: start; gap: var(--space-3);">
+                                    <span style="color: var(--success-300);">📁</span>
+                                    <div>
+                                        <strong>File Operations:</strong> Read, write, delete files in secure workspace
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: start; gap: var(--space-3);">
+                                    <span style="color: var(--secondary-300);">🌐</span>
+                                    <div>
+                                        <strong>Web Search:</strong> Get current information from the web
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: start; gap: var(--space-3);">
+                                    <span style="color: var(--warning-300);">💻</span>
+                                    <div>
+                                        <strong>Code Execution:</strong> Run Python code in secure environment
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: start; gap: var(--space-3);">
+                                    <span style="color: var(--primary-300);">🤖</span>
+                                    <div>
+                                        <strong>Smart Commands:</strong> Natural language to tool conversion
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </li>
-            {% empty %}
-                <li style="color: #999; padding: 12px;">No conversations yet</li>
-            {% endfor %}
-        </ul>
-    </div>
-    
-    <div class="main-content">
-        <div class="empty-state">
-            <h1>Welcome to AI Chat</h1>
-            <p>Start a new conversation to chat with AI</p>
-            <a href="{% url 'new_conversation' %}" class="start-chat-btn">Start New Chat</a>
-        </div>
+                </div>
+            </div>
+        </main>
     </div>
     
     <script>
+        // Theme toggle functionality
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+        
+        // Initialize theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Calculate stats
+            updateStats();
+            
+            // Add stagger animation to conversation items
+            const items = document.querySelectorAll('.conversation-item');
+            items.forEach((item, index) => {
+                item.style.animationDelay = `${0.1 * (index + 1)}s`;
+            });
+        });
+        
+        // Update statistics
+        function updateStats() {
+            const conversations = document.querySelectorAll('.conversation-item');
+            const today = new Date().toISOString().split('T')[0];
+            const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            
+            let recentCount = 0;
+            let todayCount = 0;
+            
+            conversations.forEach(item => {
+                const date = item.getAttribute('data-date');
+                if (date >= oneWeekAgo) recentCount++;
+                if (date === today) todayCount++;
+            });
+            
+            document.getElementById('recent-count').textContent = recentCount;
+            document.getElementById('today-count').textContent = todayCount;
+        }
+        
+        // Filter conversations
+        function filterConversations() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const items = document.querySelectorAll('.conversation-item');
+            
+            items.forEach(item => {
+                const title = item.getAttribute('data-title');
+                if (title.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                    item.classList.add('animate-slide-in-left');
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const menuToggle = document.getElementById('mobile-menu-toggle');
+            
+            sidebar.classList.toggle('mobile-open');
+            menuToggle.classList.toggle('active');
+        }
+        
+        function closeMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const menuToggle = document.getElementById('mobile-menu-toggle');
+            
+            sidebar.classList.remove('mobile-open');
+            menuToggle.classList.remove('active');
+        }
+        
+        // Rename functionality
         let editingConversationId = null;
         
         function startRename(conversationId, currentTitle) {
@@ -463,15 +467,20 @@
                     titleDiv.className = 'conversation-title';
                     titleDiv.textContent = data.title;
                     titleDiv.onclick = () => startRename(conversationId, data.title);
+                    titleDiv.setAttribute('data-title', data.title.toLowerCase());
                     
                     input.replaceWith(titleDiv);
                     editingConversationId = null;
+                    
+                    // Update the conversation item data attribute
+                    const conversationItem = document.getElementById(`conversation-${conversationId}`);
+                    conversationItem.setAttribute('data-title', data.title.toLowerCase());
                 } else {
-                    alert('Failed to rename conversation');
+                    showNotification('Failed to rename conversation', 'error');
                     cancelRename();
                 }
             } catch (error) {
-                alert('Error: ' + error.message);
+                showNotification('Error: ' + error.message, 'error');
                 cancelRename();
             }
         }
@@ -491,22 +500,7 @@
             editingConversationId = null;
         }
         
-        function toggleMobileMenu() {
-            const sidebar = document.querySelector('.sidebar');
-            const menuToggle = document.getElementById('mobile-menu-toggle');
-            
-            sidebar.classList.toggle('mobile-open');
-            menuToggle.classList.toggle('active');
-        }
-        
-        function closeMobileMenu() {
-            const sidebar = document.querySelector('.sidebar');
-            const menuToggle = document.getElementById('mobile-menu-toggle');
-            
-            sidebar.classList.remove('mobile-open');
-            menuToggle.classList.remove('active');
-        }
-        
+        // Delete functionality
         async function deleteConversation(conversationId) {
             if (!confirm('Are you sure you want to delete this conversation?')) {
                 return;
@@ -522,14 +516,57 @@
                 });
                 
                 if (response.ok) {
-                    location.reload();
+                    const item = document.getElementById(`conversation-${conversationId}`);
+                    item.classList.add('animate-scale-out');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 300);
                 } else {
-                    alert('Failed to delete conversation');
+                    showNotification('Failed to delete conversation', 'error');
                 }
             } catch (error) {
-                alert('Error: ' + error.message);
+                showNotification('Error: ' + error.message, 'error');
             }
         }
+        
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} animate-slide-in-down`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                max-width: 400px;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('animate-fade-out');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + K for search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('search-input').focus();
+            }
+            
+            // Ctrl/Cmd + N for new chat
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                e.preventDefault();
+                window.location.href = '{% url "new_conversation" %}';
+            }
+        });
     </script>
 </body>
 </html>
