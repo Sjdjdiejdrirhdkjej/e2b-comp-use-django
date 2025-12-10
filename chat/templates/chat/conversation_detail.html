@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#8b5cf6">
+    <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Prime - {{ conversation.title }}</title>
@@ -15,11 +15,12 @@
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
     <link rel="stylesheet" href="{% static 'css/layout.css' %}">
     <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
     
     <style>
         /* Page-specific enhancements */
         .app-layout {
-            background: var(--gradient-hero);
+            background: #000000;
         }
         
         /* Enhanced message animations */
@@ -57,7 +58,7 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--primary-500);
+            background: #ffffff;
             animation: typing-bounce 1.4s infinite ease-in-out;
         }
         
@@ -103,8 +104,8 @@
         }
         
         .input-action-btn:hover {
-            color: var(--primary-500);
-            background: var(--primary-50);
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
         }
         
         /* Message actions */
@@ -134,9 +135,8 @@
         }
         
         .message-action-btn:hover {
-            color: var(--primary-500);
-            background: var(--primary-50);
-            transform: scale(1.1);
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.15);
         }
         
         /* Code block styling */
@@ -215,8 +215,8 @@
             position: absolute;
             bottom: var(--space-20);
             right: var(--space-6);
-            background: var(--primary-500);
-            color: white;
+            background: #ffffff;
+            color: #000000;
             border: none;
             border-radius: var(--radius-full);
             width: 48px;
@@ -225,7 +225,6 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: var(--shadow-lg);
             transition: all var(--transition-base);
             opacity: 0;
             visibility: hidden;
@@ -238,9 +237,7 @@
         }
         
         .scroll-to-bottom:hover {
-            background: var(--primary-600);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-xl);
+            background: #e5e5e5;
         }
         
         /* Responsive adjustments */
@@ -267,6 +264,33 @@
 </head>
 <body>
     <div class="app-layout">
+        <!-- Mobile Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileMenu()"></div>
+        
+        <!-- Mobile Header -->
+        <header class="mobile-header">
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <h2>Prime</h2>
+            <div style="display: flex; align-items: center; gap: var(--space-2);">
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </header>
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -298,11 +322,6 @@
         <main class="main-content">
             <!-- Chat Header -->
             <header class="chat-header">
-                <button class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
                 
                 <h1 id="conversation-title" style="flex: 1; cursor: pointer;" onclick="startRename()">{{ conversation.title }}</h1>
                 
@@ -516,6 +535,9 @@
             if (window.innerWidth <= 768) {
                 messageInput.blur();
             }
+            
+            // Close mobile menu if open
+            closeMobileMenu();
             
             // Disable form
             sendBtn.disabled = true;
@@ -773,17 +795,29 @@
         function toggleMobileMenu() {
             const sidebar = document.querySelector('.sidebar');
             const menuToggle = document.getElementById('mobile-menu-toggle');
+            const overlay = document.getElementById('sidebar-overlay');
             
             sidebar.classList.toggle('mobile-open');
             menuToggle.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Prevent body scroll when menu is open
+            if (sidebar.classList.contains('mobile-open')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
         }
         
         function closeMobileMenu() {
             const sidebar = document.querySelector('.sidebar');
             const menuToggle = document.getElementById('mobile-menu-toggle');
+            const overlay = document.getElementById('sidebar-overlay');
             
             sidebar.classList.remove('mobile-open');
             menuToggle.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
         }
         
         // Rename functionality

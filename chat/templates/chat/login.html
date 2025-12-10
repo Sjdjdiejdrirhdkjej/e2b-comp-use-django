@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#8b5cf6">
+    <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Login - Prime</title>
@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
     <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
     
     <style>
         /* Login-specific styles */
@@ -24,81 +25,25 @@
             min-height: 100vh;
             position: relative;
             overflow: hidden;
-            background: var(--gradient-hero);
+            background: #000000;
         }
         
-        /* Animated background pattern */
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.04) 0%, transparent 50%);
-            animation: float 20s ease-in-out infinite;
-        }
-        
-        /* Floating orbs */
+        /* Hide decorative orbs */
         .orb {
-            position: absolute;
-            border-radius: 50%;
-            background: var(--gradient-primary);
-            opacity: 0.1;
-            animation: float 15s ease-in-out infinite;
-        }
-        
-        .orb-1 {
-            width: 300px;
-            height: 300px;
-            top: -150px;
-            left: -150px;
-            animation-delay: 0s;
-        }
-        
-        .orb-2 {
-            width: 200px;
-            height: 200px;
-            bottom: -100px;
-            right: -100px;
-            animation-delay: 5s;
-        }
-        
-        .orb-3 {
-            width: 150px;
-            height: 150px;
-            top: 50%;
-            left: 50%;
-            animation-delay: 10s;
+            display: none;
         }
         
         .login-container {
-            background: rgba(21, 27, 53, 0.98);
-            backdrop-filter: blur(20px);
+            background: #0a0a0a;
             padding: var(--space-12);
-            border-radius: var(--radius-3xl);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            border-radius: var(--radius-2xl);
             max-width: 420px;
             width: 100%;
             margin: var(--space-5);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
-            overflow: hidden;
             z-index: 10;
             animation: slideInUp 0.6s ease-out;
-        }
-        
-        .login-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: var(--gradient-primary);
         }
         
         .login-header {
@@ -108,12 +53,9 @@
         
         .login-title {
             font-size: var(--text-4xl);
-            font-weight: var(--font-bold);
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -0.025em;
+            font-weight: var(--font-semibold);
+            color: #ffffff;
+            letter-spacing: -0.02em;
             margin-bottom: var(--space-2);
         }
         
@@ -148,7 +90,7 @@
         }
         
         .form-input:focus + .form-icon {
-            color: var(--primary-500);
+            color: #ffffff;
         }
         
         .login-footer {
@@ -164,35 +106,33 @@
         }
         
         .signup-link a {
-            color: var(--primary-600);
-            font-weight: var(--font-semibold);
+            color: #ffffff;
+            font-weight: var(--font-medium);
             text-decoration: none;
             transition: all var(--transition-fast);
         }
         
         .signup-link a:hover {
-            color: var(--primary-700);
-            text-decoration: underline;
+            opacity: 0.7;
         }
         
         .theme-toggle {
             position: absolute;
             top: var(--space-4);
             right: var(--space-4);
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-full);
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-lg);
             padding: var(--space-2);
             cursor: pointer;
             transition: all var(--transition-base);
             z-index: 20;
-            color: var(--dark-text-primary);
+            color: #ffffff;
         }
         
         .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.15);
-            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.25);
         }
         
         /* Loading state */
@@ -217,14 +157,43 @@
         }
         
         /* Responsive adjustments */
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
             .login-container {
                 padding: var(--space-8);
                 margin: var(--space-4);
+                max-width: 100%;
             }
             
             .login-title {
                 font-size: var(--text-3xl);
+            }
+            
+            .form-input {
+                font-size: 16px; /* Prevents iOS zoom */
+                min-height: 48px;
+            }
+            
+            .btn-lg {
+                min-height: 48px;
+            }
+            
+            .orb {
+                display: none; /* Hide orbs on mobile for performance */
+            }
+        }
+        
+        @media (max-width: 380px) {
+            .login-container {
+                padding: var(--space-6);
+                margin: var(--space-3);
+            }
+            
+            .login-title {
+                font-size: var(--text-2xl);
+            }
+            
+            .login-subtitle {
+                font-size: var(--text-sm);
             }
         }
     </style>

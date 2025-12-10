@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#8b5cf6">
+    <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Prime - Conversations</title>
@@ -15,11 +15,12 @@
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
     <link rel="stylesheet" href="{% static 'css/layout.css' %}">
     <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
     
     <style>
         /* Page-specific styles */
         .app-layout {
-            background: var(--gradient-hero);
+            background: #000000;
         }
         
         /* Enhanced sidebar animations */
@@ -61,13 +62,11 @@
             width: 120px;
             height: 120px;
             margin: 0 auto var(--space-6);
-            background: var(--gradient-primary);
-            border-radius: var(--radius-3xl);
+            background: #ffffff;
+            border-radius: var(--radius-2xl);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: var(--shadow-xl);
-            animation: float 3s ease-in-out infinite;
         }
         
         /* Mobile menu improvements */
@@ -112,9 +111,8 @@
         }
         
         .search-input:focus {
-            border-color: var(--primary-500);
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+            border-color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
         }
         
         .search-icon {
@@ -143,8 +141,8 @@
         
         .stat-value {
             font-size: var(--text-lg);
-            font-weight: var(--font-bold);
-            color: var(--primary-300);
+            font-weight: var(--font-semibold);
+            color: #ffffff;
         }
         
         .stat-label {
@@ -168,6 +166,9 @@
 </head>
 <body>
     <div class="app-layout">
+        <!-- Mobile Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileMenu()"></div>
+        
         <!-- Mobile Header -->
         <header class="mobile-header">
             <button class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
@@ -175,10 +176,10 @@
                 <span></span>
                 <span></span>
             </button>
-            <h2 style="margin: 0; color: var(--text-primary); font-size: var(--text-lg);">Prime</h2>
+            <h2>Prime</h2>
             <div style="display: flex; align-items: center; gap: var(--space-2);">
                 <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="5"></circle>
                         <line x1="12" y1="1" x2="12" y2="3"></line>
                         <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -190,7 +191,12 @@
                         <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                     </svg>
                 </button>
-                <div style="width: 32px;"></div>
+                <a href="{% url 'new_conversation' %}" class="btn btn-primary btn-sm" style="padding: var(--space-2); min-width: 40px;" aria-label="New chat">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </a>
             </div>
         </header>
         
@@ -397,17 +403,29 @@
         function toggleMobileMenu() {
             const sidebar = document.querySelector('.sidebar');
             const menuToggle = document.getElementById('mobile-menu-toggle');
+            const overlay = document.getElementById('sidebar-overlay');
             
             sidebar.classList.toggle('mobile-open');
             menuToggle.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Prevent body scroll when menu is open
+            if (sidebar.classList.contains('mobile-open')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
         }
         
         function closeMobileMenu() {
             const sidebar = document.querySelector('.sidebar');
             const menuToggle = document.getElementById('mobile-menu-toggle');
+            const overlay = document.getElementById('sidebar-overlay');
             
             sidebar.classList.remove('mobile-open');
             menuToggle.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
         }
         
         // Rename functionality

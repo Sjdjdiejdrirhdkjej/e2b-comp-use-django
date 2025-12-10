@@ -4,6 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
+packages = ["wl-clipboard-x11"]
 
 [[ports]]
 localPort = 8000
