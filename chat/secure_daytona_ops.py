@@ -8,7 +8,7 @@ class MockDaytonaSandbox:
     Ensures all file operations are confined to the sandbox workspace.
     """
 
-    def __init__(self, workspace_dir: str = "/home/runner/workspace"):
+    def __init__(self, workspace_dir: str = "/app"):
         self.workspace_dir = workspace_dir
 
     def _resolve_within_workspace(self, file_path: str):
@@ -16,17 +16,11 @@ class MockDaytonaSandbox:
         p = Path(file_path)
         try:
             if p.is_absolute():
-                # Allow legacy /project/workspace paths by mapping them into the sandbox
                 try:
-                    rel = p.relative_to("/project/workspace")
+                    rel = p.relative_to(workspace)
                     full = workspace / rel
-                except Exception:
-                    # If path is already within the real workspace, map it
-                    try:
-                        rel = p.relative_to(workspace)
-                        full = workspace / rel
-                    except Exception:
-                        return None, "Access denied: Path must be within workspace directory"
+                except ValueError:
+                    return None, "Access denied: Path must be within workspace directory"
             else:
                 full = (workspace / p)
 
@@ -135,7 +129,7 @@ Permissions: {oct(stat_info.st_mode)[-3:]}"""
 class SecureDaytonaOperations:
     """Secure file operations using mock implementation."""
 
-    def __init__(self, workspace_dir: str = "/home/runner/workspace"):
+    def __init__(self, workspace_dir: str = "/app"):
         self.mock_mode = True
         self.workspace_dir = workspace_dir
 
