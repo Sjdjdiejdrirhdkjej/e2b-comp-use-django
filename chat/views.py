@@ -6,7 +6,7 @@ from .ai_utils import (
     get_ai_response,
     format_messages_for_gemini,
     generate_conversation_title,
-    execute_ai_command,
+    execute_ai_command_with_meta,
 )
 import json
 import time
@@ -48,7 +48,7 @@ def send_message(request, conversation_id):
     )
 
     # Check if this is an AI command first
-    command_result, action_output = execute_ai_command(content)
+    command_result, action_output, action_command = execute_ai_command_with_meta(content)
     if command_result:
         ai_response = command_result
         ai_message = Message.objects.create(
@@ -74,6 +74,7 @@ def send_message(request, conversation_id):
                 },
                 "conversation_title": conversation.title,
                 "action_output": action_output,
+                "action_command": action_command,
                 "action_status": "success"
                 if action_output and not action_output.startswith("Error:")
                 else "error",

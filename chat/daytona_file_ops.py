@@ -5,14 +5,17 @@ from django.conf import settings
 
 try:
     from daytona import Daytona, DaytonaConfig
-
     DAYTONA_AVAILABLE = True
 except ImportError:
     DAYTONA_AVAILABLE = False
 
 
 class DaytonaFileOperations:
-    """Secure file operations using Daytona containers via SDK"""
+    """Secure file operations using Daytona containers via SDK
+
+    If the Daytona SDK or sandbox is unavailable, methods return a helpful
+    error string rather than raising, so the UI can show a clear message.
+    """
 
     def __init__(self):
         self.workspace_dir = "/home/runner/workspace"
@@ -77,7 +80,10 @@ class DaytonaFileOperations:
 
     def _use_sdk_fallback(self, operation, *args, **kwargs):
         """Fallback method when SDK is not available"""
-        return f"Error: Daytona SDK not available. Install with: pip install daytona"
+        return (
+            "Error: Daytona SDK or sandbox not available. "
+            "Install with: pip install daytona and set DAYTONA_API_KEY"
+        )
 
     def read_file(self, file_path):
         """Read file content securely in container"""
@@ -221,9 +227,54 @@ Type: {file_type}
 Size: {size_mb:.2f} MB ({stat_info.st_size} bytes)
 Modified: {stat_info.st_mtime}
 Permissions: {oct(stat_info.st_mode)[-3:]}"""
-
         except Exception as e:
             return f"Error getting file info '{file_path}': {str(e)}"
+
+    def execute_code(self, code: str, language: str = "python"):
+        """Execute code inside the Daytona container sandbox.
+
+        Supports Python by writing a temporary file into the workspace and running it.
+        If the Daytona SDK doesn't expose an exec interface, returns a clear error.
+        """
+        if not self.sandbox:
+            return self._use_sdk_fallback("execute_code")
+
+        try:
+            if language.lower() != "python":
+                return f"Error: Unsupported language '{language}'. Only 'python' is supported."
+
+            # Write code to a temp file inside the workspace
+            rel_path = "tmp_daytona_exec.py"
+            abs_path = os.path.join(self.workspace_dir, rel_path)
+            os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+            with open(abs_path, "w", encoding="utf-8") as f:
+                f.write(code)
+
+            # Try common execution methods offered by SDKs
+            for method_name in ("exec", "execute", "run"):
+                method = getattr(self.sandbox, method_name, None)
+                if callable(method):
+                    try:
+                        result = method(["python", rel_path])
+                        # Handle string or rich result objects
+                        if isinstance(result, str):
+                            return f"Execution result (python):\n{result}"
+                        stdout = getattr(result, "stdout", "")
+                        stderr = getattr(result, "stderr", "")
+                        exit_code = getattr(result, "exit_code", 0)
+                        output = stdout or ""
+                        if stderr:
+                            output += ("\n--- stderr ---\n" + stderr)
+                        return f"Execution result (exit={exit_code}):\n" + (output or "<no output>")
+                    except Exception:
+                        continue
+
+            return (
+                "Error: Daytona sandbox execution interface not available. "
+                "Ensure your SDK version supports command execution."
+            )
+        except Exception as e:
+            return f"Error executing code: {str(e)}"
 
 
 # Global instance

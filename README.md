@@ -24,7 +24,7 @@ daytona create --code https://github.com/your-repo/prime-ai-chat
 1. **Set up environment variables:**
    ```bash
    cp .env.example .env
-   # Edit .env and add your GOOGLE_API_KEY
+   # Edit .env and add your GEMINI_API_KEY
    ```
 
 2. **Install dependencies:**

@@ -1,18 +1,49 @@
 import os
 import json
 import requests
-import google.generativeai as genai
 from django.conf import settings
 from dotenv import load_dotenv
+import logging
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-model = genai.GenerativeModel("gemini-2.5-flash")
+# Lazy Gemini model loader so tools can run without a key
+_model_cache = None
+
+def _get_gemini_model():
+    global _model_cache
+    if _model_cache is not None:
+        return _model_cache
+    try:
+        import google.generativeai as genai
+    except Exception as e:
+        logger.warning(f"Gemini SDK not available: {e}")
+        return None
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key or api_key.strip().strip('"').strip("'").lower() in {"", "none", "null", "your_gemini_api_key_here", "your_google_api_key_here"}:
+        logger.warning("GEMINI_API_KEY not configured; AI responses will be limited.")
+        return None
+    try:
+        genai.configure(api_key=api_key.strip().strip('"').strip("'"))
+        _model_cache = genai.GenerativeModel("gemini-2.5-flash")
+        return _model_cache
+    except Exception as e:
+        logger.error(f"Failed to initialize Gemini model: {e}")
+        return None
 
 
 def get_ai_response(messages):
     import time
+
+    model = _get_gemini_model()
+    if model is None:
+        # Graceful fallback when Gemini is not configured; do not break tools
+        return (
+            "AI model is not configured. Set GEMINI_API_KEY to enable chat responses.",
+            False,
+        )
 
     max_retries = 5
     base_delay = 1  # seconds
@@ -98,6 +129,15 @@ Please respond naturally and use the appropriate tool if needed. Be helpful and 
         except Exception as e:
             error_str = str(e).lower()
 
+            # Helpful guidance for auth/key errors
+            if any(k in error_str for k in ["invalid api key", "api key not valid", "permission", "unauthorized", "401"]):
+                hint = (
+                    "Authentication with Gemini failed. Please check your API key. "
+                    "Ensure your Replit secret is named GEMINI_API_KEY, "
+                    "has no extra quotes or spaces, and has correct permissions."
+                )
+                return f"Error: {str(e)}\n\n{hint}", False
+
             # Check if it's a rate limit error
             if any(
                 keyword in error_str
@@ -127,6 +167,10 @@ Please respond naturally and use the appropriate tool if needed. Be helpful and 
 
 def generate_conversation_title(first_user_message):
     import time
+
+    model = _get_gemini_model()
+    if model is None:
+        return "New Chat"
 
     max_retries = 5
     base_delay = 1  # seconds
@@ -188,42 +232,56 @@ def format_messages_for_gemini(conversation_messages):
     return messages
 
 
-# Import secure Daytona operations
+# Prefer Daytona container operations; fallback to secure mock if unavailable
 try:
-    from .secure_daytona_ops import secure_daytona_ops
-except ImportError:
-    # Fallback for direct execution
-    from chat.secure_daytona_ops import secure_daytona_ops
+    from .daytona_file_ops import daytona_ops as _daytona_ops
+    _sandbox = getattr(_daytona_ops, 'sandbox', None)
+    if _sandbox is not None:
+        daytona_ops = _daytona_ops
+        _TOOL_BACKEND = 'daytona'
+    else:
+        raise Exception('Daytona sandbox not available')
+except Exception:
+    try:
+        from .secure_daytona_ops import secure_daytona_ops as _secure_ops
+    except ImportError:
+        from chat.secure_daytona_ops import secure_daytona_ops as _secure_ops
+    daytona_ops = _secure_ops
+    _TOOL_BACKEND = 'secure'
 
 
 def read_file(file_path):
-    """Read content from a file using secure Daytona operations"""
-    return secure_daytona_ops.read_file(file_path)
+    """Read content from a file using Daytona container operations"""
+    return daytona_ops.read_file(file_path)
 
 
 def write_file(file_path, content):
-    """Write content to a file using secure Daytona operations"""
-    return secure_daytona_ops.write_file(file_path, content)
+    """Write content to a file using Daytona container operations"""
+    return daytona_ops.write_file(file_path, content)
 
 
 def delete_file(file_path):
-    """Delete a file using secure Daytona operations"""
-    return secure_daytona_ops.delete_file(file_path)
+    """Delete a file using Daytona container operations"""
+    return daytona_ops.delete_file(file_path)
 
 
 def list_files(directory_path):
-    """List files and directories using secure Daytona operations"""
-    return secure_daytona_ops.list_files(directory_path)
+    """List files and directories using Daytona container operations"""
+    return daytona_ops.list_files(directory_path)
 
 
 def get_file_info(file_path):
-    """Get file information using secure Daytona operations"""
-    return secure_daytona_ops.get_file_info(file_path)
+    """Get file information using Daytona container operations"""
+    return daytona_ops.get_file_info(file_path)
 
 
 def execute_code(code, language="python"):
-    """Execute code securely using Daytona sandbox"""
-    return secure_daytona_ops.execute_code(code, language)
+    """Execute code using Daytona container operations (or secure fallback)"""
+    # daytona_ops may be SecureDaytonaOperations in fallback mode, which also supports execute_code
+    exec_fn = getattr(daytona_ops, 'execute_code', None)
+    if callable(exec_fn):
+        return exec_fn(code, language)
+    return "Error: Code execution not supported by Daytona operations backend"
 
 
 def web_search(query, num_results=5):
@@ -463,7 +521,10 @@ def execute_tool_commands_from_response(response_text):
 
 
 def execute_ai_command(user_message):
-    """Parse and execute AI commands for file operations and web search"""
+    """Parse and execute AI commands for file operations and web search
+
+    Returns a tuple: (ai_text, action_output)
+    """
     import re
 
     # File read command: "read file:/path/to/file.txt"
@@ -519,3 +580,68 @@ def execute_ai_command(user_message):
         return result, result
 
     return None, None  # No command matched
+
+
+def execute_ai_command_with_meta(user_message):
+    """Like execute_ai_command but also returns the parsed command string for UI.
+
+    Returns a tuple: (ai_text, action_output, action_command)
+    action_command is a human-readable string of the tool invocation.
+    """
+    import re
+
+    # File read command
+    read_match = re.match(r"read\s+file:(.+)", user_message, re.IGNORECASE)
+    if read_match:
+        file_path = read_match.group(1).strip()
+        result = read_file(file_path)
+        return result, result, f"read file:{file_path}"
+
+    # File write command
+    write_match = re.match(
+        r"write\s+file:(.+?)\s+content:(.+)", user_message, re.IGNORECASE | re.DOTALL
+    )
+    if write_match:
+        file_path = write_match.group(1).strip()
+        content = write_match.group(2).strip()
+        result = write_file(file_path, content)
+        # Do not include full content in command echo to avoid UI noise
+        return result, result, f"write file:{file_path} content:<{len(content)} chars>"
+
+    # File delete command
+    delete_match = re.match(r"delete\s+file:(.+)", user_message, re.IGNORECASE)
+    if delete_match:
+        file_path = delete_match.group(1).strip()
+        result = delete_file(file_path)
+        return result, result, f"delete file:{file_path}"
+
+    # List files command
+    list_match = re.match(r"list\s+files:(.+)", user_message, re.IGNORECASE)
+    if list_match:
+        directory_path = list_match.group(1).strip()
+        result = list_files(directory_path)
+        return result, result, f"list files:{directory_path}"
+
+    # File info command
+    info_match = re.match(r"info\s+file:(.+)", user_message, re.IGNORECASE)
+    if info_match:
+        file_path = info_match.group(1).strip()
+        result = get_file_info(file_path)
+        return result, result, f"info file:{file_path}"
+
+    # Code execution command
+    code_match = re.match(r"run\s+code:(.+)", user_message, re.IGNORECASE | re.DOTALL)
+    if code_match:
+        code = code_match.group(1).strip()
+        result = execute_code(code, "python")
+        code_preview = code[:60].replace("\n", " ⏎ ") + ("..." if len(code) > 60 else "")
+        return result, result, f"run code:{code_preview}"
+
+    # Web search command
+    search_match = re.match(r"search\s+web:(.+)", user_message, re.IGNORECASE)
+    if search_match:
+        query = search_match.group(1).strip()
+        result = web_search(query)
+        return result, result, f"search web:{query}"
+
+    return None, None, None

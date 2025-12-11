@@ -485,6 +485,7 @@
         <!-- Action Sidebar -->
         <aside class="action-sidebar" id="action-sidebar">
             <h3>🖥️ Prime's Computer</h3>
+            <div class="action-command" id="action-command" style="font-family: var(--font-family-mono); font-size: var(--text-sm); color: var(--neutral-300); margin-bottom: var(--space-3);"></div>
             <div class="action-output" id="action-output"></div>
             <div class="action-status" id="action-status" style="display: none;"></div>
         </aside>
@@ -522,6 +523,7 @@
         const chatMessages = document.getElementById('chat-messages');
         const actionOutput = document.getElementById('action-output');
         const actionStatus = document.getElementById('action-status');
+        const actionCommand = document.getElementById('action-command');
         const typingIndicator = document.getElementById('typing-indicator');
         const sendBtn = document.getElementById('send-btn');
         
@@ -567,6 +569,9 @@
                     
                     // Update action output if available
                     if (data.action_output) {
+                        if (data.action_command) {
+                            actionCommand.textContent = data.action_command;
+                        }
                         updateActionOutput(data.action_output, data.action_status || 'success');
                     }
                     
