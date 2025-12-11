@@ -1,4 +1,4 @@
-modules = ["web", "nodejs-20", "python-3.12", "bash"]
+modules = ["web", "nodejs-20", "bash", "python-3.11"]
 [agent]
 expertMode = true
 
@@ -7,6 +7,34 @@ channel = "stable-25_05"
 packages = ["wl-clipboard-x11"]
 
 [[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
 localPort = 8000
 externalPort = 80
 exposeLocalhost = true
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Django Server"
+
+[[workflows.workflow]]
+name = "Django Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python manage.py runserver 0.0.0.0:5000"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"

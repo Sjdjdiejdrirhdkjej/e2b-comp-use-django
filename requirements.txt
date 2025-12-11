@@ -6,3 +6,7 @@ Django
 google-generativeai
 python-dotenv
 requests
+django
+google-generativeai
+python-dotenv
+requests
